@@ -1,0 +1,34 @@
+<!-- templates/contactos.html -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Contactos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+  <header class="bg-blue-700 text-white p-4">
+    <h1 class="text-xl font-bold text-center">Página de Contactos</h1>
+  </header>
+
+  <main class="p-6">
+    <h2 class="text-lg font-semibold mb-4">Lista de Contactos</h2>
+    <ul class="space-y-2">
+      <li class="p-2 bg-white rounded shadow">Fernando Marcelo Arauz Blanco</li>
+      <li class="p-2 bg-white rounded shadow">Yader Ivan Hernandez Muños</li>
+      <li class="p-2 bg-white rounded shadow">Yessenia Jabriel Gonzalez Morales</li>
+      <li class="p-2 bg-white rounded shadow">Ramon Antonio Mendoza Cano</li>
+      <li class="p-2 bg-white rounded shadow">Winston Vidal Reyes Narváez</li>
+      <li class="p-2 bg-white rounded shadow">Ricardo Alexander Urbina Alvarado</li>
+      <li class="p-2 bg-white rounded shadow">Ernesto Arturo Torrez Marenco</li>
+    </ul>
+
+    <div class="mt-6">
+      <a href="{{ url_for('home') }}" class="text-blue-600 hover:underline">← Volver al inicio</a>
+    </div>
+  </main>
+
+  <footer class="bg-blue-700 text-white p-4 text-center text-sm mt-6">
+    © 2025 Proyecto CiMe. Todos los derechos reservados.
+  </footer>
+</body>
+</html>
