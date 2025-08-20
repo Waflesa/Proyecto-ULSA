@@ -19,7 +19,6 @@
     </h1>
     <nav class="space-x-4 text-sm sm:text-base">
       <a class="hover:underline" href="#">Sensores</a>
-      <a class="hover:underline" href="#">Configuración</a>
       <a class="hover:underline" href="{{ url_for('contact') }}">Contacto</a>
     </nav>
   </header>
@@ -66,26 +65,27 @@
   </footer>
 
   <script>
-    async function updateSensorData() {
-      try {
-        const resp = await fetch("/data");
-        const data = await resp.json();
-        const now = new Date().toLocaleTimeString();
+  async function updateSensorData() {
+    try {
+      const resp = await fetch("/data");
+      const data = await resp.json();
+      const now = new Date().toLocaleTimeString();
 
-        document.getElementById("ph-value").textContent = data.ph.toFixed(2);
-        document.getElementById("ph-time").textContent = now;
+      const ph = parseFloat(data.ph);
+      document.getElementById("ph-value").textContent = isNaN(ph) ? "N/A" : ph.toFixed(2);
+      document.getElementById("ph-time").textContent = now;
 
-        document.getElementById("nivel-value").textContent = data.nivel;
-        document.getElementById("nivel-time").textContent = now;
+      document.getElementById("nivel-value").textContent = data.nivel;
+      document.getElementById("nivel-time").textContent = now;
 
-        document.getElementById("temp-value").textContent = `${data.temp.toFixed(1)} °C`;
-        document.getElementById("temp-time").textContent = now;
-      } catch (e) {
-        console.error("Error leyendo datos:", e);
-      }
+      document.getElementById("temp-value").textContent = `${data.temp.toFixed(1)} °C`;
+      document.getElementById("temp-time").textContent = now;
+    } catch (e) {
+      console.error("Error leyendo datos:", e);
     }
+  }
 
-    setInterval(updateSensorData, 1000); // Actualizar cada 1 segundo
-  </script>
+  setInterval(updateSensorData, 1000);
+</script>
 </body>
 </html>
