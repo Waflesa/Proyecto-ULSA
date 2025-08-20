@@ -11,6 +11,7 @@
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
+  <!-- Encabezado -->
   <header class="bg-blue-700 text-white p-4 shadow-md flex items-center justify-between">
     <h1 class="text-2xl font-semibold flex items-center">
       <i class="fas fa-microchip mr-2"></i>
@@ -19,10 +20,12 @@
     <nav class="space-x-4 text-sm sm:text-base">
       <a class="hover:underline" href="#">Sensores</a>
       <a class="hover:underline" href="#">Configuración</a>
-      <a class="hover:underline" href="#">Contacto</a>
+      <!-- ✅ Corregido: apunta a la ruta de Flask -->
+      <a class="hover:underline" href="{{ url_for('contact') }}">Contacto</a>
     </nav>
   </header>
 
+  <!-- Contenido principal -->
   <main class="flex-grow container mx-auto p-4">
     <section class="mb-8">
       <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
@@ -59,28 +62,27 @@
     </section>
   </main>
 
-<footer class="bg-blue-700 text-white p-4 text-sm relative">
-  <!-- Imagen a la izquierda -->
-  <img alt="Logo" class="h-12 w-12 absolute left-4 top-1/2 -translate-y-1/2" src="{{ url_for('static', filename='Logo.png') }}">
-  
-  <!-- Texto centrado -->
-  <div class="text-center">
-    © 2025 Proyecto CiMe. Todos los derechos reservados.
-  </div>
-</footer>
+  <!-- Pie de página -->
+  <footer class="bg-blue-700 text-white p-4 text-sm relative">
+    <!-- Imagen a la izquierda -->
+    <img alt="Logo" class="h-12 w-12 absolute left-4 top-1/2 -translate-y-1/2" src="{{ url_for('static', filename='Logo.png') }}">
+    
+    <!-- Texto centrado -->
+    <div class="text-center">
+      © 2025 Proyecto CiMe. Todos los derechos reservados.
+    </div>
+  </footer>
 
-
-
+  <!-- Script de simulación de sensores -->
   <script>
-    // Simulación de actualización de datos de sensores cada 5 segundos
     function updateSensorData() {
       const now = new Date();
       const timeString = now.toLocaleTimeString();
 
       // Valores simulados
-      const ph = (6 + Math.random() * 2).toFixed(2);
-      const nivel = (50 + Math.random() * 50).toFixed(0);
-      const temp = (20 + Math.random() * 10).toFixed(1);
+    const ph = (6 + Math.random() * 2).toFixed(2);
+    const nivel = (50 + Math.random() * 50).toFixed(0);
+    const temp = (20 + Math.random() * 10).toFixed(1);
 
       document.getElementById("ph-value").textContent = ph;
       document.getElementById("ph-time").textContent = timeString;
