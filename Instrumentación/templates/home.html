@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Monitoreo de Sensores</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
@@ -11,7 +12,6 @@
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
-  <!-- Encabezado -->
   <header class="bg-blue-700 text-white p-4 shadow-md flex items-center justify-between">
     <h1 class="text-2xl font-semibold flex items-center">
       <i class="fas fa-microchip mr-2"></i>
@@ -20,12 +20,10 @@
     <nav class="space-x-4 text-sm sm:text-base">
       <a class="hover:underline" href="#">Sensores</a>
       <a class="hover:underline" href="#">Configuración</a>
-      <!-- ✅ Corregido: apunta a la ruta de Flask -->
       <a class="hover:underline" href="{{ url_for('contact') }}">Contacto</a>
     </nav>
   </header>
 
-  <!-- Contenido principal -->
   <main class="flex-grow container mx-auto p-4">
     <section class="mb-8">
       <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
@@ -43,8 +41,8 @@
         </div>
 
         <!-- Sensor 2: Nivel -->
-        <div class="bg-white rounded-lg shadow p-7 flex flex-col items-center">
-          <img alt="Sensor de nivel" class="mb-5" height="200" src="{{ url_for('static', filename='Nivel.jpg') }}" width="200"/>
+        <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+          <img alt="Sensor de nivel" class="mb-4" height="100" src="{{ url_for('static', filename='Nivel.jpg') }}" width="100"/>
           <h3 class="text-lg font-semibold mb-2">Nivel</h3>
           <p class="text-3xl font-mono text-blue-600" id="nivel-value">--</p>
           <p class="text-gray-500 mt-1">Última actualización: <span id="nivel-time">--:--:--</span></p>
@@ -62,40 +60,32 @@
     </section>
   </main>
 
-  <!-- Pie de página -->
   <footer class="bg-blue-700 text-white p-4 text-sm relative">
-    <!-- Imagen a la izquierda -->
     <img alt="Logo" class="h-12 w-12 absolute left-4 top-1/2 -translate-y-1/2" src="{{ url_for('static', filename='Logo.png') }}">
-    
-    <!-- Texto centrado -->
-    <div class="text-center">
-      © 2025 Proyecto CiMe. Todos los derechos reservados.
-    </div>
+    <div class="text-center">© 2025 Proyecto CiMe. Todos los derechos reservados.</div>
   </footer>
 
-  <!-- Script de simulación de sensores -->
   <script>
-    function updateSensorData() {
-      const now = new Date();
-      const timeString = now.toLocaleTimeString();
+    async function updateSensorData() {
+      try {
+        const resp = await fetch("/data");
+        const data = await resp.json();
+        const now = new Date().toLocaleTimeString();
 
-      // Valores simulados
-    const ph = (6 + Math.random() * 2).toFixed(2);
-    const nivel = (50 + Math.random() * 50).toFixed(0);
-    const temp = (20 + Math.random() * 10).toFixed(1);
+        document.getElementById("ph-value").textContent = data.ph.toFixed(2);
+        document.getElementById("ph-time").textContent = now;
 
-      document.getElementById("ph-value").textContent = ph;
-      document.getElementById("ph-time").textContent = timeString;
+        document.getElementById("nivel-value").textContent = data.nivel;
+        document.getElementById("nivel-time").textContent = now;
 
-      document.getElementById("nivel-value").textContent = nivel;
-      document.getElementById("nivel-time").textContent = timeString;
-
-      document.getElementById("temp-value").textContent = `${temp} °C`;
-      document.getElementById("temp-time").textContent = timeString;
+        document.getElementById("temp-value").textContent = `${data.temp.toFixed(1)} °C`;
+        document.getElementById("temp-time").textContent = now;
+      } catch (e) {
+        console.error("Error leyendo datos:", e);
+      }
     }
 
-    updateSensorData();
-    setInterval(updateSensorData, 5000);
+    setInterval(updateSensorData, 1000); // Actualizar cada 1 segundo
   </script>
 </body>
 </html>
