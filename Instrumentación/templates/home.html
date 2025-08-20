@@ -1,0 +1,99 @@
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Monitoreo de Sensores</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Roboto Mono', monospace; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <header class="bg-blue-700 text-white p-4 shadow-md flex items-center justify-between">
+    <h1 class="text-2xl font-semibold flex items-center">
+      <i class="fas fa-microchip mr-2"></i>
+      Monitoreo de Sensores
+    </h1>
+    <nav class="space-x-4 text-sm sm:text-base">
+      <a class="hover:underline" href="#">Sensores</a>
+      <a class="hover:underline" href="#">Configuración</a>
+      <a class="hover:underline" href="#">Contacto</a>
+    </nav>
+  </header>
+
+  <main class="flex-grow container mx-auto p-4">
+    <section class="mb-8">
+      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+        <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
+        Estado Actual de Sensores
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+
+        <!-- Sensor 1: pH -->
+        <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+          <img alt="Sensor de PH" class="mb-4" height="100" src="{{ url_for('static', filename='PH.jpg') }}" width="100"/>
+          <h3 class="text-lg font-semibold mb-2">PH</h3>
+          <p class="text-3xl font-mono text-red-600" id="ph-value">--</p>
+          <p class="text-gray-500 mt-1">Última actualización: <span id="ph-time">--:--:--</span></p>
+        </div>
+
+        <!-- Sensor 2: Nivel -->
+        <div class="bg-white rounded-lg shadow p-7 flex flex-col items-center">
+          <img alt="Sensor de nivel" class="mb-5" height="200" src="{{ url_for('static', filename='Nivel.jpg') }}" width="200"/>
+          <h3 class="text-lg font-semibold mb-2">Nivel</h3>
+          <p class="text-3xl font-mono text-blue-600" id="nivel-value">--</p>
+          <p class="text-gray-500 mt-1">Última actualización: <span id="nivel-time">--:--:--</span></p>
+        </div>
+
+        <!-- Sensor 3: Temperatura -->
+        <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+          <img alt="Sensor de temperatura" class="mb-4" height="100" src="{{ url_for('static', filename='Temperatura.jpg') }}" width="100"/>
+          <h3 class="text-lg font-semibold mb-2">Temperatura</h3>
+          <p class="text-3xl font-mono text-yellow-500" id="temp-value">-- °C</p>
+          <p class="text-gray-500 mt-1">Última actualización: <span id="temp-time">--:--:--</span></p>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+<footer class="bg-blue-700 text-white p-4 text-sm relative">
+  <!-- Imagen a la izquierda -->
+  <img alt="Logo" class="h-12 w-12 absolute left-4 top-1/2 -translate-y-1/2" src="{{ url_for('static', filename='Logo.png') }}">
+  
+  <!-- Texto centrado -->
+  <div class="text-center">
+    © 2025 Proyecto CiMe. Todos los derechos reservados.
+  </div>
+</footer>
+
+
+
+  <script>
+    // Simulación de actualización de datos de sensores cada 5 segundos
+    function updateSensorData() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+
+      // Valores simulados
+      const ph = (6 + Math.random() * 2).toFixed(2);
+      const nivel = (50 + Math.random() * 50).toFixed(0);
+      const temp = (20 + Math.random() * 10).toFixed(1);
+
+      document.getElementById("ph-value").textContent = ph;
+      document.getElementById("ph-time").textContent = timeString;
+
+      document.getElementById("nivel-value").textContent = nivel;
+      document.getElementById("nivel-time").textContent = timeString;
+
+      document.getElementById("temp-value").textContent = `${temp} °C`;
+      document.getElementById("temp-time").textContent = timeString;
+    }
+
+    updateSensorData();
+    setInterval(updateSensorData, 5000);
+  </script>
+</body>
+</html>
