@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: 'Roboto Mono', monospace; }
   </style>
@@ -31,30 +32,51 @@
       </h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
-        <!-- Sensor 1: pH -->
         <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
           <img alt="Sensor de PH" class="mb-4" height="100" src="{{ url_for('static', filename='PH.jpg') }}" width="100"/>
           <h3 class="text-lg font-semibold mb-2">PH</h3>
           <p class="text-3xl font-mono text-red-600" id="ph-value">--</p>
-          <p class="text-gray-500 mt-1">Última actualización: <span id="ph-time">--:--:--</span></p>
         </div>
 
-        <!-- Sensor 2: Nivel -->
         <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
           <img alt="Sensor de nivel" class="mb-4" height="100" src="{{ url_for('static', filename='Nivel.jpg') }}" width="100"/>
           <h3 class="text-lg font-semibold mb-2">Nivel</h3>
           <p class="text-3xl font-mono text-blue-600" id="nivel-value">--</p>
-          <p class="text-gray-500 mt-1">Última actualización: <span id="nivel-time">--:--:--</span></p>
         </div>
 
-        <!-- Sensor 3: Temperatura -->
         <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
           <img alt="Sensor de temperatura" class="mb-4" height="100" src="{{ url_for('static', filename='Temperatura.jpg') }}" width="100"/>
           <h3 class="text-lg font-semibold mb-2">Temperatura</h3>
           <p class="text-3xl font-mono text-yellow-500" id="temp-value">-- °C</p>
-          <p class="text-gray-500 mt-1">Última actualización: <span id="temp-time">--:--:--</span></p>
         </div>
 
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+        <i class="fas fa-chart-line mr-2 text-blue-600"></i>
+        Histórico de Datos
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4 text-center">Gráfico de PH</h3>
+          <div class="h-64">
+            <canvas id="ph-chart"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4 text-center">Gráfico de Nivel</h3>
+          <div class="h-64">
+            <canvas id="nivel-chart"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold mb-4 text-center">Gráfico de Temperatura</h3>
+          <div class="h-64">
+            <canvas id="temp-chart"></canvas>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -65,6 +87,70 @@
   </footer>
 
   <script>
+  // Inicialización de gráficos y datos
+  const MAX_DATA_POINTS = 10;
+  let phChart, nivelChart, tempChart;
+  const phData = [];
+  const nivelData = [];
+  const tempData = [];
+
+  function initCharts() {
+    const commonOptions = {
+      scales: {
+        x: { display: false },
+        y: { beginAtZero: true }
+      },
+      animation: false,
+      plugins: {
+        legend: { display: false }
+      }
+    };
+
+    phChart = new Chart(document.getElementById('ph-chart'), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'PH',
+          data: phData,
+          borderColor: 'rgb(220, 38, 38)',
+          tension: 0.1
+        }]
+      },
+      options: commonOptions
+    });
+
+    nivelChart = new Chart(document.getElementById('nivel-chart'), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Nivel',
+          data: nivelData,
+          borderColor: 'rgb(37, 99, 235)',
+          tension: 0.1
+        }]
+      },
+      options: commonOptions
+    });
+
+    tempChart = new Chart(document.getElementById('temp-chart'), {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Temperatura',
+          data: tempData,
+          borderColor: 'rgb(234, 179, 8)',
+          tension: 0.1
+        }]
+      },
+      options: commonOptions
+    });
+  }
+  
+  window.onload = initCharts;
+
   // Función para convertir valor numérico de nivel a texto
   function getNivelTexto(nivel) {
     if (nivel <= 47) return "Bajo";
@@ -78,19 +164,35 @@
       const data = await resp.json();
       const now = new Date().toLocaleTimeString();
 
-      // Actualizar pH
+      // Actualizar valores numéricos
       const ph = parseFloat(data.ph);
+      const nivel = parseInt(data.nivel);
+      const temp = parseFloat(data.temp);
+
       document.getElementById("ph-value").textContent = isNaN(ph) ? "N/A" : ph.toFixed(2);
       document.getElementById("ph-time").textContent = now;
 
-      // Actualizar Nivel como texto
-      const nivel = parseInt(data.nivel);
       document.getElementById("nivel-value").textContent = isNaN(nivel) ? "N/A" : getNivelTexto(nivel);
       document.getElementById("nivel-time").textContent = now;
 
-      // Actualizar Temperatura
-      document.getElementById("temp-value").textContent = `${data.temp.toFixed(1)} °C`;
+      document.getElementById("temp-value").textContent = isNaN(temp) ? "N/A" : `${temp.toFixed(1)} °C`;
       document.getElementById("temp-time").textContent = now;
+
+      // Actualizar gráficos
+      phData.push(isNaN(ph) ? null : ph.toFixed(2));
+      if (phData.length > MAX_DATA_POINTS) phData.shift();
+      phChart.data.labels = phData.map((_, i) => i + 1);
+      phChart.update();
+
+      nivelData.push(isNaN(nivel) ? null : nivel);
+      if (nivelData.length > MAX_DATA_POINTS) nivelData.shift();
+      nivelChart.data.labels = nivelData.map((_, i) => i + 1);
+      nivelChart.update();
+
+      tempData.push(isNaN(temp) ? null : temp.toFixed(1));
+      if (tempData.length > MAX_DATA_POINTS) tempData.shift();
+      tempChart.data.labels = tempData.map((_, i) => i + 1);
+      tempChart.update();
 
     } catch (e) {
       console.error("Error leyendo datos:", e);
