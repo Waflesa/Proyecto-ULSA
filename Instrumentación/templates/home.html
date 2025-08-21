@@ -65,27 +65,39 @@
   </footer>
 
   <script>
+  // Función para convertir valor numérico de nivel a texto
+  function getNivelTexto(nivel) {
+    if (nivel <= 47) return "Bajo";
+    else if (nivel > 47 && nivel <= 130) return "Medio";
+    else return "Alto";
+  }
+
   async function updateSensorData() {
     try {
       const resp = await fetch("/data");
       const data = await resp.json();
       const now = new Date().toLocaleTimeString();
 
+      // Actualizar pH
       const ph = parseFloat(data.ph);
       document.getElementById("ph-value").textContent = isNaN(ph) ? "N/A" : ph.toFixed(2);
       document.getElementById("ph-time").textContent = now;
 
-      document.getElementById("nivel-value").textContent = data.nivel;
+      // Actualizar Nivel como texto
+      const nivel = parseInt(data.nivel);
+      document.getElementById("nivel-value").textContent = isNaN(nivel) ? "N/A" : getNivelTexto(nivel);
       document.getElementById("nivel-time").textContent = now;
 
+      // Actualizar Temperatura
       document.getElementById("temp-value").textContent = `${data.temp.toFixed(1)} °C`;
       document.getElementById("temp-time").textContent = now;
+
     } catch (e) {
       console.error("Error leyendo datos:", e);
     }
   }
 
-  setInterval(updateSensorData, 1000);
-</script>
+  setInterval(updateSensorData, 1000); // Actualizar cada 1 segundo
+  </script>
 </body>
 </html>
