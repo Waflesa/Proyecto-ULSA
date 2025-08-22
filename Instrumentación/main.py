@@ -9,8 +9,8 @@ sensor_data = {"ph": 0, "nivel": 0, "temp": 0}
 
 # Conectar Arduino
 try:
-    arduino = serial.Serial('COM4', 9600, timeout=1)
-    print("Arduino conectado en COM4")
+    arduino = serial.Serial('COM6', 9600, timeout=1)
+    print("Arduino conectado en COM6")
     time.sleep(2)
 except Exception as e:
     arduino = None
