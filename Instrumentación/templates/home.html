@@ -82,124 +82,139 @@
   </main>
 
   <footer class="bg-blue-700 text-white p-4 text-sm relative">
-    
     <div class="text-center">© 2025 Proyecto CiMe. Todos los derechos reservados.</div>
   </footer>
 
   <script>
-  // Inicialización de gráficos y datos
-  const MAX_DATA_POINTS = 10;
-  let phChart, nivelChart, tempChart;
-  const phData = [];
-  const nivelData = [];
-  const tempData = [];
+    const MAX_DATA_POINTS = 10;
+    let phChart, nivelChart, tempChart;
+    const phData = [];
+    const nivelData = [];
+    const tempData = [];
 
-  function initCharts() {
-    const commonOptions = {
-      scales: {
-        x: { display: false },
-        y: { beginAtZero: true }
-      },
-      animation: false,
-      plugins: {
-        legend: { display: false }
-      }
-    };
+    function initCharts() {
+      const commonOptions = {
+        scales: {
+          x: { display: false },
+          y: { beginAtZero: true }
+        },
+        animation: false,
+        plugins: {
+          legend: { display: false }
+        }
+      };
 
-    phChart = new Chart(document.getElementById('ph-chart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'PH',
-          data: phData,
-          borderColor: 'rgb(220, 38, 38)',
-          tension: 0.1
-        }]
-      },
-      options: commonOptions
-    });
+      phChart = new Chart(document.getElementById('ph-chart'), {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'PH',
+            data: phData,
+            borderColor: 'rgb(220, 38, 38)',
+            tension: 0.1
+          }]
+        },
+        options: commonOptions
+      });
 
-    nivelChart = new Chart(document.getElementById('nivel-chart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Nivel',
-          data: nivelData,
-          borderColor: 'rgb(37, 99, 235)',
-          tension: 0.1
-        }]
-      },
-      options: commonOptions
-    });
+      nivelChart = new Chart(document.getElementById('nivel-chart'), {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Nivel',
+            data: nivelData,
+            borderColor: 'rgb(37, 99, 235)',
+            tension: 0.1
+          }]
+        },
+        options: commonOptions
+      });
 
-    tempChart = new Chart(document.getElementById('temp-chart'), {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Temperatura',
-          data: tempData,
-          borderColor: 'rgb(234, 179, 8)',
-          tension: 0.1
-        }]
-      },
-      options: commonOptions
-    });
-  }
-  
-  window.onload = initCharts;
-
-  // Función para convertir valor numérico de nivel a texto
-  function getNivelTexto(nivel) {
-    if (nivel <= 47) return "Bajo";
-    else if (nivel > 47 && nivel <= 130) return "Medio";
-    else return "Alto";
-  }
-
-  async function updateSensorData() {
-    try {
-      const resp = await fetch("/data");
-      const data = await resp.json();
-      const now = new Date().toLocaleTimeString();
-
-      // Actualizar valores numéricos
-      const ph = parseFloat(data.ph);
-      const nivel = parseInt(data.nivel);
-      const temp = parseFloat(data.temp);
-
-      document.getElementById("ph-value").textContent = isNaN(ph) ? "N/A" : ph.toFixed(2);
-      document.getElementById("ph-time").textContent = now;
-
-      document.getElementById("nivel-value").textContent = isNaN(nivel) ? "N/A" : getNivelTexto(nivel);
-      document.getElementById("nivel-time").textContent = now;
-
-      document.getElementById("temp-value").textContent = isNaN(temp) ? "N/A" : `${temp.toFixed(1)} °C`;
-      document.getElementById("temp-time").textContent = now;
-
-      // Actualizar gráficos
-      phData.push(isNaN(ph) ? null : ph.toFixed(2));
-      if (phData.length > MAX_DATA_POINTS) phData.shift();
-      phChart.data.labels = phData.map((_, i) => i + 1);
-      phChart.update();
-
-      nivelData.push(isNaN(nivel) ? null : nivel);
-      if (nivelData.length > MAX_DATA_POINTS) nivelData.shift();
-      nivelChart.data.labels = nivelData.map((_, i) => i + 1);
-      nivelChart.update();
-
-      tempData.push(isNaN(temp) ? null : temp.toFixed(1));
-      if (tempData.length > MAX_DATA_POINTS) tempData.shift();
-      tempChart.data.labels = tempData.map((_, i) => i + 1);
-      tempChart.update();
-
-    } catch (e) {
-      console.error("Error leyendo datos:", e);
+      tempChart = new Chart(document.getElementById('temp-chart'), {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Temperatura',
+            data: tempData,
+            borderColor: 'rgb(234, 179, 8)',
+            tension: 0.1
+          }]
+        },
+        options: commonOptions
+      });
     }
-  }
 
-  setInterval(updateSensorData, 1000); // Actualizar cada 1 segundo
+    window.onload = initCharts;
+
+    function getNivelTexto(nivel) {
+      if (nivel <= 47) return "Bajo";
+      else if (nivel > 47 && nivel <= 130) return "Medio";
+      else return "Alto";
+    }
+
+    async function updateSensorData() {
+      try {
+        const resp = await fetch("/data");
+        if (!resp.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await resp.json();
+
+        // Actualizar pH
+        const ph = parseFloat(data.ph);
+        const phValueElement = document.getElementById("ph-value");
+        phValueElement.textContent = isNaN(ph) ? "N/A" : ph.toFixed(2);
+        phValueElement.classList.remove('text-gray-400');
+        phValueElement.classList.add('text-red-600');
+        phData.push(isNaN(ph) ? null : ph.toFixed(2));
+        if (phData.length > MAX_DATA_POINTS) phData.shift();
+        phChart.data.labels = phData.map((_, i) => i + 1);
+        phChart.update();
+
+        // Actualizar Nivel
+        const nivel = parseInt(data.nivel);
+        const nivelValueElement = document.getElementById("nivel-value");
+        nivelValueElement.textContent = isNaN(nivel) ? "N/A" : getNivelTexto(nivel);
+        nivelValueElement.classList.remove('text-gray-400');
+        nivelValueElement.classList.add('text-blue-600');
+        nivelData.push(isNaN(nivel) ? null : nivel);
+        if (nivelData.length > MAX_DATA_POINTS) nivelData.shift();
+        nivelChart.data.labels = nivelData.map((_, i) => i + 1);
+        nivelChart.update();
+
+        // Actualizar Temperatura
+        const temp = parseFloat(data.temp);
+        const tempValueElement = document.getElementById("temp-value");
+        tempValueElement.textContent = isNaN(temp) ? "N/A" : `${temp.toFixed(1)} °C`;
+        tempValueElement.classList.remove('text-gray-400');
+        tempValueElement.classList.add('text-yellow-500');
+        tempData.push(isNaN(temp) ? null : temp.toFixed(1));
+        if (tempData.length > MAX_DATA_POINTS) tempData.shift();
+        tempChart.data.labels = tempData.map((_, i) => i + 1);
+        tempChart.update();
+
+      } catch (e) {
+        console.error("Error leyendo datos:", e);
+
+        // Si no hay datos, cambiar a un estado "desconectado"
+        document.getElementById("ph-value").textContent = "Sin datos";
+        document.getElementById("ph-value").classList.remove('text-red-600');
+        document.getElementById("ph-value").classList.add('text-gray-400');
+
+        document.getElementById("nivel-value").textContent = "Sin datos";
+        document.getElementById("nivel-value").classList.remove('text-blue-600');
+        document.getElementById("nivel-value").classList.add('text-gray-400');
+
+        document.getElementById("temp-value").textContent = "Sin datos";
+        document.getElementById("temp-value").classList.remove('text-yellow-500');
+        document.getElementById("temp-value").classList.add('text-gray-400');
+      }
+    }
+
+    setInterval(updateSensorData, 1000);
   </script>
 </body>
 </html>
