@@ -10,29 +10,27 @@ DHT dht(DHTPIN, DHTTYPE);
 #define lectura A1     // Pin analógico para el sensor de nivel
 
 int nivelLiquido = 0;
-// Límites originales para la escala del Arduino Uno (0-1023)
 int limiteInferior = 47;
 int limiteSuperior = 130;
 
 byte ledRojo     = 11;
 byte ledAmarillo = 10;
-byte ledVerde    = 8; // Cambiado al pin 8 para no usar el mismo que el DHT
+byte ledVerde    = 8;
 
 // --- Sensor de pH ---
-#define LECTURA_PH A0  // Pin analógico para el sensor de pH
+#define LECTURA_PH A0
 int buffer_arr[10];
-int temp;
 long avgval;
-float calibration_value = 21.34;
+float calibration_value = 21.25; // Ajustar según tu calibración en pH7
 
 void setup() {
-  Serial.begin(9600); // Velocidad de comunicación
+  Serial.begin(9600); 
   Serial.println("Inicializando sistemas...");
 
-  // --- Configuración del sensor DHT11 ---
+  // Configuración DHT11
   dht.begin();
 
-  // --- Configuración del sensor de nivel de agua ---
+  // Configuración sensor de nivel
   pinMode(alimentacionSensor, OUTPUT);
   digitalWrite(alimentacionSensor, LOW);
   pinMode(ledRojo, OUTPUT);
@@ -44,81 +42,62 @@ void setup() {
 }
 
 void loop() {
-  // --- Lógica del Sensor de Nivel de Agua ---
+  // --- Nivel de agua ---
   int nivel = leerSensorNivel();
-  
   if (nivel <= limiteInferior) {
-    Serial.println("Nivel de agua: Bajo");
     digitalWrite(ledRojo, HIGH); 
     digitalWrite(ledAmarillo, LOW); 
     digitalWrite(ledVerde, LOW);
   } else if (nivel > limiteInferior && nivel <= limiteSuperior) {
-    Serial.println("Nivel de agua: Medio");
     digitalWrite(ledRojo, LOW); 
     digitalWrite(ledAmarillo, HIGH); 
     digitalWrite(ledVerde, LOW);
-  } else if (nivel > limiteSuperior) {
-    Serial.println("Nivel de agua: Alto");
+  } else {
     digitalWrite(ledRojo, LOW); 
     digitalWrite(ledAmarillo, LOW); 
     digitalWrite(ledVerde, HIGH);
   }
-  Serial.print("Valor Nivel: ");
-  Serial.println(nivel);
-  Serial.println("--------------------");
 
-  // --- Lógica del Sensor de pH ---
-  for (int i = 0; i < 10; i++) { 
+  Serial.print("Valor Nivel: "); Serial.println(nivel);
+
+  // --- Sensor de pH ---
+  for (int i = 0; i < 10; i++) {
     buffer_arr[i] = analogRead(LECTURA_PH);
-    delay(30);
-  }
-  for (int i = 0; i < 9; i++) {
-    for (int j = i + 1; j < 10; j++) {
-      if (buffer_arr[i] > buffer_arr[j]) {
-        temp = buffer_arr[i]; buffer_arr[i] = buffer_arr[j]; buffer_arr[j] = temp;
-      }
-    }
+    delay(10);
   }
   avgval = 0;
-  for (int i = 2; i < 8; i++) {
-    avgval += buffer_arr[i];
-  }
-  
-  float volt = (float)avgval * 5.0 / 1023 / 6; 
-  float ph_act = -5.70 * volt + calibration_value;
-  
-  Serial.print("pH Voltaje: ");
-  Serial.print(volt, 3);
-  Serial.print(" V  |  pH: ");
-  Serial.println(ph_act, 2);
-  Serial.println("--------------------");
+  for (int i = 0; i < 10; i++) avgval += buffer_arr[i];
+  avgval /= 10;
 
-  // --- Lógica del DHT11 ---
+  float volt = avgval * 5.0 / 1023;
+  float ph_act = 2+(-5.70 * volt + calibration_value);
+
+  Serial.print("pH Voltaje: "); Serial.print(volt, 3);
+  Serial.print(" V  |  pH: "); Serial.println(ph_act, 2);
+
+  // --- Sensor DHT11 ---
   float humidity = dht.readHumidity();
   float temperature = dht.readTemperature();
 
   if (isnan(humidity) || isnan(temperature)) {
     Serial.println("ERROR EN EL SENSOR DHT11");
   } else {
-    Serial.print("Humedad: ");
-    Serial.print(humidity);
-    Serial.print("%  |  Temperatura: ");
-    Serial.print(temperature);
+    Serial.print("Humedad: "); Serial.print(humidity);
+    Serial.print("%  |  Temperatura: "); Serial.print(temperature);
     Serial.println(" C");
   }
-  Serial.println("====================");
 
-  // --- ENVÍO A FLASK ---
-  Serial.print(ph_act, 2);   // pH con 2 decimales
+  // --- Envío a Flask ---
+  Serial.print(ph_act, 2);   // pH
   Serial.print(",");
-  Serial.print(nivel);       // Nivel como entero
+  Serial.print(nivel);       // Nivel
   Serial.print(",");
-  Serial.println(temperature); // Temperatura en °C
+  Serial.println(temperature); // Temperatura
 
   delay(1000);
 }
 
-// --- Función para leer el sensor de nivel de agua ---
+// --- Función para leer sensor de nivel ---
 int leerSensorNivel() {
   digitalWrite(alimentacionSensor, HIGH);
   delay(50);
